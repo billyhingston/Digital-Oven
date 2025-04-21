@@ -1,0 +1,33 @@
+module show_time (input new_clk, output [6:0] s0, s1, s2, s3);
+	reg[3:0] seconds_ones = 4'b0000;
+	reg[3:0] seconds_tens = 4'b0000;
+	reg[3:0] minutes_ones = 4'b0000;
+	reg[3:0] minutes_tens = 4'b0000;	
+	always @ (posedge new_clk) begin
+		seconds_ones = seconds_ones + 4'b0001;
+		if ((seconds_tens == 4'b0101) && (seconds_ones == 4'b1010)) begin  // 5 and 10 (seconds)
+			seconds_ones = 4'b0000;
+			seconds_tens = 4'b0000;
+			minutes_ones = minutes_ones + 4'b0001;
+			if (minutes_ones== 4'b1010) begin // 10
+				minutes_tens = minutes_tens + 4'b0001;
+				minutes_ones = 4'b0000;
+			end
+		end
+		else if (seconds_ones == 4'b1010) begin // 10
+			seconds_tens = seconds_tens + 4'b0001;
+			seconds_ones = 4'b0000;
+		end
+		if ((minutes_tens == 4'b0101) && (minutes_ones == 4'b1010)) begin  // 5 and 10 (seconds)
+			seconds_ones = 4'b0000;
+			seconds_tens = 4'b0000;
+			minutes_ones = 4'b0000;
+			minutes_tens = 4'b0000;
+		end
+	end
+	disp disp0 (seconds_ones, s0);
+	disp disp1 (seconds_tens, s1); 
+	
+	disp disp3 (minutes_ones, s2);
+	disp disp4 (minutes_tens, s3);
+endmodule

@@ -1,0 +1,84 @@
+module set_temp_time_two (input select_clk, swt, top, bottom, 
+output [6:0] s4, s5, s6, s7, s8, s9, output reg [9:0] temp_set, time_set);
+
+	reg[9:0] temp_state = 65; // min is 65
+	reg[9:0] time_state = 0;
+
+	reg[3:0] temp_ones = 0; 
+	reg[3:0] temp_tens = 0;
+	reg[3:0] temp_hundreds = 0;
+	reg[3:0] time_seconds_ones = 0;
+	reg[3:0] time_seconds_tens = 0;
+	reg[3:0] time_minutes_ones = 0;
+
+	reg [5:0] seconds = 0;
+	always @ (posedge select_clk) begin
+		if (swt == 0) begin // temp control (swt = 0)
+			if (top == 0) begin
+				if (temp_state == 999) begin
+					temp_state = 999;
+				end
+				else begin
+					temp_state = temp_state + 1;
+				end
+			end
+			else if (bottom == 0) begin
+				if (temp_state == 65) begin
+					temp_state = 65;
+				end
+				else begin
+					temp_state = temp_state - 1;
+				end
+			end
+		end
+		else if (swt == 1) begin // time control
+			if (top == 0) begin
+				if (time_state == 599) begin  // 599 is value that makes time: 9:59 (MAX)
+					time_state = 599;
+				end
+				else begin
+					time_state = time_state + 1;
+				end
+			end
+			else if (bottom == 0) begin
+				if (time_state == 0) begin
+					time_state = 0;
+				end
+				else begin
+					time_state = time_state - 1;
+				end
+			end
+		end
+	end
+	always @ (*) begin
+		// calc values from temp state
+		
+		temp_ones = temp_state % 10;
+		temp_tens = (temp_state % 100) / 10;
+		temp_hundreds = temp_state / 100;
+		
+		// calc values from time state
+		seconds = time_state % 60;
+		time_seconds_ones = seconds % 10;
+		time_seconds_tens = (seconds - time_seconds_ones) / 10;
+		time_minutes_ones = (time_state - seconds) / 60;
+		
+		// outputs
+		temp_set = temp_state;
+		if (temp_set == 65) begin  // default set temp is 300
+			temp_set = 300;
+		end
+		time_set = time_state;
+		if (time_set == 0) begin  // default set time is 1:00
+			time_set = 60;
+		end
+		
+	end
+	disp disp4 (temp_ones, s4);
+	disp disp5 (temp_tens, s5); 
+	disp disp6 (temp_hundreds, s6);
+	disp disp7 (time_seconds_ones, s7);
+	disp disp8 (time_seconds_tens, s8); 
+	disp disp9 (time_minutes_ones, s9);
+
+endmodule

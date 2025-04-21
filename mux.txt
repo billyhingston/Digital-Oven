@@ -1,0 +1,32 @@
+module mux (input on_off, bake_swt, input [6:0] s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15,
+output reg [6:0] seg0, seg1, seg2, seg3, seg4, seg5);
+	always @ (*) begin
+		
+		if (bake_swt == 1) begin
+			seg0 = s10;
+			seg1 = s11;
+			seg2 = s12;
+			seg3 = s13;
+			seg4 = s14;
+			seg5 = s15;
+		end
+		else if (bake_swt == 0) begin
+			if (on_off == 1) begin
+				seg0 = s4;
+				seg1 = s5;
+				seg2 = s6;
+				seg3 = s7;
+				seg4 = s8;
+				seg5 = s9;
+			end
+			else if (on_off == 0) begin
+				seg0 = s0;
+				seg1 = s1;
+				seg2 = s2;
+				seg3 = s3;
+				seg4 = 7'b1111111;
+				seg5 = 7'b1111111;
+			end
+		end
+	end
+endmodule

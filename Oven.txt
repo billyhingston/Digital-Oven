@@ -1,0 +1,21 @@
+module Oven (input clk, on_off, bake_swt, reset, cont, swt, top, bottom, output LED, 
+output [6:0] seg0, seg1, seg2, seg3, seg4, seg5);
+	// new clock module
+	wire [6:0] s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15;
+	wire [9:0] temp_set, time_set;
+	
+	gen_new_clk myclk(clk, new_clk); // use 50MHz from board
+	gen_selector_clk (clk, select_clk);
+	
+	
+	show_time show0(new_clk, s0, s1, s2, s3);
+	
+	set_temp_time_two show1(select_clk, swt, top, bottom, s4, s5, s6, s7, s8, s9, temp_set, time_set);
+	
+	bake baking(new_clk, bake_swt, reset, cont, temp_set, time_set, LED, s10, s11, s12, s13, s14, s15); // note: is not taking temp_set from other module
+
+	
+	mux mymux(on_off, bake_swt, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, 
+	s10, s11, s12, s13, s14, s15, seg0, seg1, seg2, seg3, seg4, seg5);
+	
+endmodule

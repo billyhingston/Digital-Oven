@@ -1,0 +1,76 @@
+module bake (input new_clk, bake_swt, reset, cont, input [9:0] temp_set, time_set,
+output reg LED, output [6:0] s10, s11, s12, s13, s14, s15);
+
+	reg[9:0] temp_state = 65; // min is 65
+	reg[9:0] time_state = 0;
+	
+	reg[3:0] temp_ones = 0; 
+	reg[3:0] temp_tens = 0;
+	reg[3:0] temp_hundreds = 0;
+	reg[3:0] time_seconds_ones = 0;
+	reg[3:0] time_seconds_tens = 0;
+	reg[3:0] time_minutes_ones = 0;
+	
+	reg [5:0] seconds = 0;
+	
+	always @ (posedge new_clk) begin
+		if ((bake_swt == 0) && (temp_state != 65)) begin
+			temp_state = temp_state - 1;
+		end
+		if (bake_swt == 1) begin
+			if ((temp_state < temp_set) && ((time_state < time_set) || (cont == 1))) begin
+				if (time_state != 0) begin
+					time_state = time_state + 1;
+				end
+				if (temp_state == 999) begin
+					temp_state = 999;
+				end
+				else begin
+					if ((temp_state < temp_set) && ((time_state < time_set) || (cont == 1))) begin
+						temp_state = temp_state + 2;
+					end
+				end
+			end
+			else begin // once it hits temp_set, do fluxuation of temperature code
+				LED = 1;	// when oven has reached temp_set, LED is on
+				if ((time_state < time_set) || (cont == 1)) begin
+					time_state = time_state + 1;
+				end
+				if (temp_state == 65) begin
+					temp_state = 65;
+				end
+				else begin
+					temp_state = temp_state - 1;
+				end
+			end
+			if ((time_state >= time_set) && (cont != 1)) begin	// if temp_set is reached, LED turns off
+				LED = 0;
+			end
+		end
+		if ((reset == 1) && (temp_state == 65)) begin  // reset
+			time_state = 0;
+		end
+	end
+	always @ (*) begin
+		if (bake_swt == 1) begin
+			// calc values from temp state
+			
+			temp_ones = temp_state % 10;
+			temp_tens = (temp_state % 100) / 10;
+			temp_hundreds = temp_state / 100;
+			
+			// calc values from time state
+			seconds = time_state % 60;
+			time_seconds_ones = seconds % 10;
+			time_seconds_tens = (seconds - time_seconds_ones) / 10;
+			time_minutes_ones = (time_state - seconds) / 60;
+		end
+	end
+	disp disp10 (temp_ones, s10);
+	disp disp11 (temp_tens, s11); 
+	disp disp12 (temp_hundreds, s12);
+	disp disp13 (time_seconds_ones, s13);
+	disp disp14 (time_seconds_tens, s14); 
+	disp disp15 (time_minutes_ones, s15);
+	
+endmodule
